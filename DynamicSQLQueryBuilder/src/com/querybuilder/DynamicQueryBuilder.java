@@ -7,9 +7,13 @@ import java.util.Map;
 
 /**
  * The Class DynamicQueryBuilder.
+ * 
+ * @author dhruv aggarwal
  */
 public class DynamicQueryBuilder {
 
+	public static final String STR_COMMA_SPACE = ", ";
+	
 	/** The table name. */
 	private String tableName;
 	
@@ -199,17 +203,23 @@ public class DynamicQueryBuilder {
 	 * @param sb the sb
 	 */
 	private void returnQueryForInsert(StringBuilder sb) {
-		StringBuilder valuesSb = new StringBuilder();
+		
 		sb.append("Insert into ").append(tableName).append(" ( ");
-		for(int i=0 ; i<columns.size() ; i++){
-			sb.append(columns.get(i)).append(" , ");
-			
-			valuesSb.append("?").append(" , ");
+		
+		for (int i = 0; i < columns.size(); i++) {
+			sb.append(columns.get(i)).append(STR_COMMA_SPACE);
 			
 		}
+
+		sb.deleteCharAt(sb.length() - 2); //remove last comma.
+		sb.append(" ) values (");
+		for (int i = 0; i < columns.size(); i++) {
+			sb.append("?").append(STR_COMMA_SPACE);
+			
+		}
+		
 		sb.deleteCharAt(sb.length() - 2);
-		valuesSb.deleteCharAt(sb.length() - 2);
-		sb.append(" ) values (").append(valuesSb).append(" ) " );
+		sb.append(" ) " );
 		
 	}
 	
@@ -219,12 +229,12 @@ public class DynamicQueryBuilder {
 	 * @param sb the sb
 	 */
 	private void returnQueryForUpdate(StringBuilder sb) {
-		sb.append("Update").append(tableName).append(" Set ");
-		addColoumnsToQueryForUpdate(sb,columns," , ");
+		sb.append("Update ").append(tableName).append(" Set ");
+		addColoumnsToQueryForUpdate(sb,columns,STR_COMMA_SPACE);
 		
 		if( whereClauseColumns != null && (!whereClauseColumns.isEmpty())){
 			sb.append(" where " );
-			addColoumnsToQueryForUpdate(sb,columns," AND ");
+			addColoumnsToQueryForUpdate(sb,whereClauseColumns," AND ");
 		}
 	}
 	
@@ -235,11 +245,16 @@ public class DynamicQueryBuilder {
 	 * @param columns2 the columns 2
 	 * @param string the string
 	 */
-	private void addColoumnsToQueryForUpdate(StringBuilder sb, List<String> columns2, String string) {
-		for(int i = 0 ; i < columns2.size() ; i++){
-			if( i < (columns2.size()-1)){
-				sb.append(string);
+	private void addColoumnsToQueryForUpdate(StringBuilder sb, List<String> cols, String seprator) {
+		for(int i = 0 ; i < cols.size() ; i++){
+			sb.append(cols.get(i)).append(" =?");
+			if( i < (cols.size()-1)){
+				sb.append(seprator);
 			}
 		}
+	}
+	
+	public Object[] getValues() {
+		return values.toArray();
 	}
 }
